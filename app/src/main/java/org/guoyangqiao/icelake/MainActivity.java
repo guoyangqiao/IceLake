@@ -5,6 +5,7 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -13,6 +14,7 @@ import com.baidu.location.LocationClientOption;
 import org.guoyangqiao.icelake.callback.OnStartCallback;
 
 public class MainActivity extends AppCompatActivity {
+    private static final String TAG = "MAIN";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -22,18 +24,15 @@ public class MainActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
 
         FloatingActionButton fab = findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-            }
-        });
+        fab.setOnClickListener(view -> Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
+                .setAction("Action", null).show());
 
-
+        LocationClient locationClient = initLocationOption();
         View viewById = findViewById(R.id.button2);
         viewById.setOnClickListener((v -> {
-            initLocationOption();
+            Log.d(TAG, viewById.toString() + " start.....");
+            locationClient.start();
+            Log.d(TAG, viewById.toString() + " end.....");
         }));
     }
 
@@ -61,9 +60,11 @@ public class MainActivity extends AppCompatActivity {
 
     /**
      * 初始化定位参数配置
+     *
+     * @return
      */
 
-    private void initLocationOption() {
+    private LocationClient initLocationOption() {
         LocationClient locationClient = new LocationClient(getApplicationContext());
         LocationClientOption locationOption = new LocationClientOption();
         locationOption.setLocationMode(LocationClientOption.LocationMode.Hight_Accuracy);
@@ -79,10 +80,9 @@ public class MainActivity extends AppCompatActivity {
         locationOption.setOpenGps(true);
         locationOption.setIsNeedAltitude(false);
         locationOption.setOpenAutoNotifyMode();
-        locationOption.setOpenAutoNotifyMode(5000, 10, LocationClientOption.LOC_SENSITIVITY_HIGHT);
         locationClient.setLocOption(locationOption);
 
         locationClient.registerLocationListener(new OnStartCallback());
-        locationClient.start();
+        return locationClient;
     }
 }
