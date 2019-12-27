@@ -1,8 +1,12 @@
 package org.guoyangqiao.icelake;
 
+import android.Manifest;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -19,6 +23,13 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        String[] ACCESS_COARSE_LOCATION = {Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION};
+        for (String access : ACCESS_COARSE_LOCATION) {
+            if (ContextCompat.checkSelfPermission(this, access) != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(this, ACCESS_COARSE_LOCATION, 400);
+            }
+        }
+
         setContentView(R.layout.activity_main);
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -58,6 +69,7 @@ public class MainActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
+
     /**
      * 初始化定位参数配置
      *
@@ -66,6 +78,7 @@ public class MainActivity extends AppCompatActivity {
 
     private LocationClient initLocationOption() {
         LocationClient locationClient = new LocationClient(getApplicationContext());
+        locationClient.registerLocationListener(new OnStartCallback());
         LocationClientOption locationOption = new LocationClientOption();
         locationOption.setLocationMode(LocationClientOption.LocationMode.Hight_Accuracy);
         locationOption.setCoorType("gcj02");
@@ -81,8 +94,6 @@ public class MainActivity extends AppCompatActivity {
         locationOption.setIsNeedAltitude(false);
         locationOption.setOpenAutoNotifyMode();
         locationClient.setLocOption(locationOption);
-
-        locationClient.registerLocationListener(new OnStartCallback());
         return locationClient;
     }
 }
