@@ -23,7 +23,7 @@ public class OnStartCallback extends BDAbstractLocationListener {
                     try {
                         return x.getName().replaceFirst("get", "") + ": " + MethodHandles.lookup().unreflect(x).invoke(location);
                     } catch (Throwable throwable) {
-                        throwable.printStackTrace();
+                        //Ignore
                         return null;
                     }
                 })

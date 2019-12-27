@@ -80,7 +80,7 @@ public class MainActivity extends AppCompatActivity {
         LocationClient locationClient = new LocationClient(getApplicationContext());
         locationClient.registerLocationListener(new OnStartCallback());
         LocationClientOption locationOption = new LocationClientOption();
-        locationOption.setLocationMode(LocationClientOption.LocationMode.Hight_Accuracy);
+        locationOption.setLocationMode(LocationClientOption.LocationMode.Battery_Saving);
         locationOption.setCoorType("gcj02");
         locationOption.setIsNeedAddress(true);
         locationOption.setIsNeedLocationDescribe(true);
@@ -92,7 +92,7 @@ public class MainActivity extends AppCompatActivity {
         locationOption.SetIgnoreCacheException(false);
         locationOption.setOpenGps(true);
         locationOption.setIsNeedAltitude(false);
-        locationOption.setOpenAutoNotifyMode();
+        locationOption.setOpenAutoNotifyMode(3000, 10, LocationClientOption.LOC_SENSITIVITY_LOW);
         locationClient.setLocOption(locationOption);
         return locationClient;
     }
