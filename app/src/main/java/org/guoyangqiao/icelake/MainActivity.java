@@ -5,9 +5,12 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import com.baidu.location.LocationClient;
+import com.baidu.location.LocationClientOption;
+import org.guoyangqiao.icelake.callback.OnStartCallback;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -30,7 +33,7 @@ public class MainActivity extends AppCompatActivity {
 
         View viewById = findViewById(R.id.button2);
         viewById.setOnClickListener((v -> {
-
+            initLocationOption();
         }));
     }
 
@@ -54,5 +57,32 @@ public class MainActivity extends AppCompatActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    /**
+     * 初始化定位参数配置
+     */
+
+    private void initLocationOption() {
+        LocationClient locationClient = new LocationClient(getApplicationContext());
+        LocationClientOption locationOption = new LocationClientOption();
+        locationOption.setLocationMode(LocationClientOption.LocationMode.Hight_Accuracy);
+        locationOption.setCoorType("gcj02");
+        locationOption.setIsNeedAddress(true);
+        locationOption.setIsNeedLocationDescribe(true);
+        locationOption.setNeedDeviceDirect(false);
+        locationOption.setLocationNotify(true);
+        locationOption.setIgnoreKillProcess(true);
+        locationOption.setIsNeedLocationDescribe(true);
+        locationOption.setIsNeedLocationPoiList(true);
+        locationOption.SetIgnoreCacheException(false);
+        locationOption.setOpenGps(true);
+        locationOption.setIsNeedAltitude(false);
+        locationOption.setOpenAutoNotifyMode();
+        locationOption.setOpenAutoNotifyMode(5000, 10, LocationClientOption.LOC_SENSITIVITY_HIGHT);
+        locationClient.setLocOption(locationOption);
+
+        locationClient.registerLocationListener(new OnStartCallback());
+        locationClient.start();
     }
 }
