@@ -4,50 +4,65 @@ import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.content.Context;
-import android.graphics.Color;
+import android.graphics.drawable.Icon;
 import android.os.Bundle;
+import android.support.v4.app.NotificationCompat;
 import android.support.v7.app.AppCompatActivity;
-import android.widget.Button;
+import android.text.method.KeyListener;
+import android.view.inputmethod.InputMethodManager;
+import android.widget.EditText;
+import android.widget.ImageView;
 import com.baidu.location.BDAbstractLocationListener;
 import com.baidu.location.LocationClient;
 import com.baidu.location.LocationClientOption;
-import org.guoyangqiao.icelake.callback.OnStartCallback;
+import org.guoyangqiao.icelake.callback.LocationListener;
 
 public class BackgroundLocApp extends AppCompatActivity {
     private static final String TAG = "MAIN";
 
     public static final String CHANNEL_ICE_LAKE = "org.guoyangqiao.icelake";
-
+    public static final int CHANNEL_ID = 1;
     private LocationClient locationClient;
-    private Notification notification;
-    private boolean inFrontState = false;
+    private boolean started = false;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        locationClient = initLocationClient(new OnStartCallback());
-        createChannels();
-        notification = new Notification.Builder(getApplicationContext(), CHANNEL_ICE_LAKE)
+        ImageView locateView = findViewById(R.id.start_img);
+        locateView.setImageIcon(Icon.createWithResource(this, R.drawable.routing));
+        EditText checkRadius = findViewById(R.id.check_radius);
+        KeyListener checkRadiusKeyListener = checkRadius.getKeyListener();
+        NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this, CHANNEL_ICE_LAKE)
+                .setVisibility(Notification.VISIBILITY_PRIVATE)
+                .setContentText("Loading")
                 .setContentTitle("IceLake")
-                .setContentText("My destiny")
-                .setSmallIcon(android.R.drawable.stat_notify_more)
-                .setAutoCancel(true).build();
-        notification.defaults = Notification.DEFAULT_SOUND; //设置为默认的声音
-
-        Button viewById = (Button) findViewById(R.id.button2);
-        viewById.setOnClickListener(event -> {
-                    if (inFrontState) {
-                        inFrontState = false;
-                        locationClient.disableLocInForeground(true);
-                        viewById.setText("Start");
-                        locationClient.stop();
+                .setSmallIcon(R.drawable.routing)
+                .setAutoCancel(true);
+        NotificationManager mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        createChannels(mNotificationManager);
+        LocationListener locationListener = new LocationListener(findViewById(R.id.latitude), findViewById(R.id.longitude), checkRadius, findViewById(R.id.distance), notificationBuilder, mNotificationManager, locationClient, locateView);
+        locationClient = initLocationClient(locationListener);
+        locationClient.start();
+        locateView.setOnClickListener(event -> {
+                    int imgId;
+                    if (started) {
+                        //Stop the whole world
+                        locationListener.stop();
+                        locationClient.restart();
+                        started = false;
+                        imgId = R.drawable.routing;
+                        checkRadius.setKeyListener(checkRadiusKeyListener);
                     } else {
-                        locationClient.enableLocInForeground(1, notification);
-                        inFrontState = true;
-                        viewById.setText("Stop");
+                        //Start the whole world
                         locationClient.start();
+                        started = true;
+                        locationListener.start();
+                        imgId = R.drawable.safari;
+                        checkRadius.setKeyListener(null);
                     }
+                    hideKeyBoard();
+                    locateView.setImageIcon(Icon.createWithResource(getApplicationContext(), imgId));
                 }
         );
     }
@@ -74,21 +89,27 @@ public class BackgroundLocApp extends AppCompatActivity {
         locationOption.SetIgnoreCacheException(false);
         locationOption.setOpenGps(true);
         locationOption.setIsNeedAltitude(false);
-//        locationOption.setOpenAutoNotifyMode(3000, 10, LocationClientOption.LOC_SENSITIVITY_LOW);
-        locationOption.setOpenAutoNotifyMode();
+        locationOption.setOpenAutoNotifyMode(0, 0, LocationClientOption.LOC_SENSITIVITY_HIGHT);
+//        locationOption.setOpenAutoNotifyMode();
         locationClient.setLocOption(locationOption);
         return locationClient;
     }
 
 
-    public void createChannels() {
-        NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-        NotificationChannel androidChannel = new NotificationChannel(CHANNEL_ICE_LAKE, "ANDROID CHANNEL", NotificationManager.IMPORTANCE_DEFAULT);
-        androidChannel.enableLights(true);
-        androidChannel.enableVibration(true);
-        androidChannel.setLightColor(Color.GREEN);
-        androidChannel.setLockscreenVisibility(Notification.VISIBILITY_PUBLIC);
-        notificationManager.createNotificationChannel(androidChannel);
+    public void createChannels(NotificationManager notificationManager) {
+        NotificationChannel mChannel = new NotificationChannel(CHANNEL_ICE_LAKE, "ICE_LAKE", NotificationManager.IMPORTANCE_HIGH);
+        mChannel.enableVibration(true);
+        mChannel.setVibrationPattern(new long[]{0, 250, 100, 250});
+        mChannel.setShowBadge(true);
+        notificationManager.createNotificationChannel(mChannel);
     }
 
+    private void hideKeyBoard() {
+        InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+        if (imm.isActive() && getCurrentFocus() != null) {
+            if (getCurrentFocus().getWindowToken() != null) {
+                imm.hideSoftInputFromWindow(getCurrentFocus().getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
+            }
+        }
+    }
 }
