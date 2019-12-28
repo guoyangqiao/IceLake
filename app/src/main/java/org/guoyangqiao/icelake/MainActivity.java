@@ -1,4 +1,4 @@
 package org.guoyangqiao.icelake;
 
-public class MainActivity extends GeoFenceApp {
+public class MainActivity extends BackgroundLocApp {
 }

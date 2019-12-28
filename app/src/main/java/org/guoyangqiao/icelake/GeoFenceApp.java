@@ -11,7 +11,7 @@ import android.util.Log;
 import com.baidu.geofence.GeoFenceClient;
 import com.baidu.geofence.model.DPoint;
 
-class GeoFenceApp extends AppCompatActivity {
+public class GeoFenceApp extends AppCompatActivity {
     private static final String TAG = "GEO_FENCE";
     public static final String GEO_FENCE_BROADCAST_ACTION = "com.location.apis.geofencedemo.broadcast";
 
