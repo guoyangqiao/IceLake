@@ -3,7 +3,9 @@ package org.guoyangqiao.icelake;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.drawable.Icon;
 import android.os.Bundle;
 import android.support.v4.app.NotificationCompat;
@@ -21,7 +23,6 @@ public class BackgroundLocApp extends AppCompatActivity {
     private static final String TAG = "MAIN";
 
     public static final String CHANNEL_ICE_LAKE = "org.guoyangqiao.icelake";
-    public static final int CHANNEL_ID = 1;
     private LocationClient locationClient;
     private boolean started = false;
 
@@ -33,33 +34,36 @@ public class BackgroundLocApp extends AppCompatActivity {
         locateView.setImageIcon(Icon.createWithResource(this, R.drawable.routing));
         EditText checkRadius = findViewById(R.id.check_radius);
         KeyListener checkRadiusKeyListener = checkRadius.getKeyListener();
-        NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this, CHANNEL_ICE_LAKE)
-                .setVisibility(Notification.VISIBILITY_PRIVATE)
-                .setContentText("Loading")
-                .setContentTitle("IceLake")
-                .setSmallIcon(R.drawable.routing)
-                .setAutoCancel(true);
         NotificationManager mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         createChannels(mNotificationManager);
-        LocationListener locationListener = new LocationListener(findViewById(R.id.latitude), findViewById(R.id.longitude), checkRadius, findViewById(R.id.distance), notificationBuilder, mNotificationManager, locationClient, locateView);
+        LocationListener locationListener = new LocationListener(findViewById(R.id.latitude), findViewById(R.id.longitude), checkRadius, findViewById(R.id.distance), locateView);
         locationClient = initLocationClient(locationListener);
         locationClient.start();
         locateView.setOnClickListener(event -> {
                     int imgId;
+                    NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this, CHANNEL_ICE_LAKE)
+                            .setVisibility(Notification.VISIBILITY_PRIVATE)
+                            .setContentText("target distance " + checkRadius.getText())
+                            .setContentTitle("We are watching you!")
+                            .setSmallIcon(R.drawable.routing)
+                            .setAutoCancel(true);
                     if (started) {
                         //Stop the whole world
                         locationListener.stop();
-                        locationClient.restart();
+                        locationClient.disableLocInForeground(true);
+                        locationClient.stop();
                         started = false;
                         imgId = R.drawable.routing;
                         checkRadius.setKeyListener(checkRadiusKeyListener);
                     } else {
+                        checkRadius.setKeyListener(null);
+                        notificationBuilder.setContentIntent(PendingIntent.getActivity(getApplicationContext(), 0, new Intent(this, BackgroundLocApp.class), 0));
                         //Start the whole world
+                        locationClient.enableLocInForeground(1, notificationBuilder.build());
                         locationClient.start();
                         started = true;
                         locationListener.start();
                         imgId = R.drawable.safari;
-                        checkRadius.setKeyListener(null);
                     }
                     hideKeyBoard();
                     locateView.setImageIcon(Icon.createWithResource(getApplicationContext(), imgId));
@@ -98,8 +102,6 @@ public class BackgroundLocApp extends AppCompatActivity {
 
     public void createChannels(NotificationManager notificationManager) {
         NotificationChannel mChannel = new NotificationChannel(CHANNEL_ICE_LAKE, "ICE_LAKE", NotificationManager.IMPORTANCE_HIGH);
-        mChannel.enableVibration(true);
-        mChannel.setVibrationPattern(new long[]{0, 250, 100, 250});
         mChannel.setShowBadge(true);
         notificationManager.createNotificationChannel(mChannel);
     }

@@ -1,8 +1,6 @@
 package org.guoyangqiao.icelake.callback;
 
-import android.app.NotificationManager;
 import android.location.Location;
-import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
@@ -11,16 +9,12 @@ import android.widget.TextView;
 import com.baidu.location.BDAbstractLocationListener;
 import com.baidu.location.BDLocation;
 import com.baidu.location.LocationClient;
-import org.guoyangqiao.icelake.BackgroundLocApp;
 
 import java.text.DecimalFormat;
 import java.util.Arrays;
 
 public class LocationListener extends BDAbstractLocationListener {
     private static final String TAG = "LOCATION";
-    private final NotificationCompat.Builder builder;
-    private final NotificationManager notificationManager;
-    private final LocationClient locationClient;
     private final ImageView locateView;
     private boolean start_calc;
     private TextView latitude_view, longitude_view, distance_view;
@@ -35,14 +29,11 @@ public class LocationListener extends BDAbstractLocationListener {
 
     };
 
-    public LocationListener(TextView latitude_view, TextView longitude_view, EditText check_range_view, TextView distance, NotificationCompat.Builder builder, NotificationManager notificationManager, LocationClient locationClient, ImageView locateView) {
-        this.builder = builder;
-        this.notificationManager = notificationManager;
+    public LocationListener(TextView latitude_view, TextView longitude_view, EditText check_range_view, TextView distance, ImageView locateView) {
         this.latitude_view = latitude_view;
         this.longitude_view = longitude_view;
         this.check_range_view = check_range_view;
         this.distance_view = distance;
-        this.locationClient = locationClient;
         this.locateView = locateView;
     }
 
@@ -75,19 +66,14 @@ public class LocationListener extends BDAbstractLocationListener {
         } else {
             setDistanceView(null);
         }
-        builder.setContentTitle("Distance " + getDistanceStr());
-        builder.setContentText("Current coordinates [" + this.current_latitude + ", " + this.current_longitude + "]");
-        notificationManager.notify(BackgroundLocApp.CHANNEL_ICE_LAKE, BackgroundLocApp.CHANNEL_ID, builder.build());
         if (distance[0] > check_radius) {
-            builder.setContentText("Our of fence now!").setVibrate(new long[]{0, 250, 100, 250});
-            notificationManager.notify(BackgroundLocApp.CHANNEL_ICE_LAKE, BackgroundLocApp.CHANNEL_ID, builder.build());
             locateView.callOnClick();
         }
         Log.d(TAG, toString());
     }
 
     private String getDistanceStr() {
-        DecimalFormat df = new DecimalFormat(".00");
+        DecimalFormat df = new DecimalFormat("0.00");
         return df.format(distance[0]);
     }
 
