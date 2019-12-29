@@ -65,11 +65,8 @@ public class LocationListener extends BDAbstractLocationListener {
         if (start_calc) {
             Location.distanceBetween(this.current_latitude, this.current_longitude, this.dest_latitude, this.dest_longitude, distance);
             setDistanceView(getDistanceStr());
-        } else {
-            setDistanceView(null);
         }
         if (start_calc && distance[0] > check_radius) {
-            mediaPlayer.seekTo(0);
             mediaPlayer.start();
             Vibrator vibrator = (Vibrator) parentContext.getSystemService(Context.VIBRATOR_SERVICE);
             vibrator.vibrate(VibrationEffect.createWaveform(new long[]{100, 1000, 100, 500, 100, 1000, 100, 500, 100, 1000, 100, 2000}, 0));

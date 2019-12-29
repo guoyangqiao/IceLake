@@ -33,6 +33,7 @@ public class BackgroundLocApp extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         this.mediaPlayer = MediaPlayer.create(this, R.raw.sakura_drop);
+        this.mediaPlayer.setLooping(true);
         this.vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
         ImageView locateView = findViewById(R.id.start_img);
         locateView.setImageIcon(Icon.createWithResource(this, R.drawable.routing));
@@ -102,7 +103,10 @@ public class BackgroundLocApp extends AppCompatActivity {
     @Override
     protected void onStop() {
         super.onStop();
-        mediaPlayer.pause();
+        if (mediaPlayer.isPlaying()) {
+            mediaPlayer.pause();
+            mediaPlayer.seekTo(0);
+        }
         vibrator.cancel();
     }
 
