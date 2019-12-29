@@ -1,8 +1,11 @@
 package org.guoyangqiao.icelake.callback;
 
+import android.content.Context;
 import android.location.Location;
+import android.media.MediaPlayer;
+import android.os.VibrationEffect;
+import android.os.Vibrator;
 import android.util.Log;
-import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -16,6 +19,8 @@ import java.util.Arrays;
 public class LocationListener extends BDAbstractLocationListener {
     private static final String TAG = "LOCATION";
     private final ImageView locateView;
+    private final Context parentContext;
+    private final MediaPlayer mediaPlayer;
     private boolean start_calc;
     private TextView latitude_view, longitude_view, distance_view;
     private EditText check_range_view;
@@ -25,16 +30,14 @@ public class LocationListener extends BDAbstractLocationListener {
 
     private float[] distance = new float[1];
 
-    private static final View.OnClickListener NOOP = (c) -> {
-
-    };
-
-    public LocationListener(TextView latitude_view, TextView longitude_view, EditText check_range_view, TextView distance, ImageView locateView) {
+    public LocationListener(TextView latitude_view, TextView longitude_view, EditText check_range_view, TextView distance, ImageView locateView, MediaPlayer mediaPlayer, Context parentContext) {
         this.latitude_view = latitude_view;
         this.longitude_view = longitude_view;
         this.check_range_view = check_range_view;
         this.distance_view = distance;
         this.locateView = locateView;
+        this.mediaPlayer = mediaPlayer;
+        this.parentContext = parentContext;
     }
 
     private void setCurrent(double latitude, double longitude, double radius) {
@@ -46,7 +49,6 @@ public class LocationListener extends BDAbstractLocationListener {
     }
 
     public void start() {
-//        setDistanceView("0.00");
         this.dest_latitude = current_latitude;
         this.dest_longitude = current_longitude;
         this.check_radius = Double.parseDouble(check_range_view.getText().toString());
@@ -55,8 +57,8 @@ public class LocationListener extends BDAbstractLocationListener {
 
     public void stop() {
         this.start_calc = false;
-        setDistanceView(null);
     }
+
 
     public void onReceiveLocation(BDLocation location) {
         setCurrent(location.getLatitude(), location.getLongitude(), location.getRadius());
@@ -66,7 +68,12 @@ public class LocationListener extends BDAbstractLocationListener {
         } else {
             setDistanceView(null);
         }
-        if (distance[0] > check_radius) {
+        if (start_calc && distance[0] > check_radius) {
+            mediaPlayer.seekTo(0);
+            mediaPlayer.start();
+            Vibrator vibrator = (Vibrator) parentContext.getSystemService(Context.VIBRATOR_SERVICE);
+            vibrator.vibrate(VibrationEffect.createWaveform(new long[]{100, 1000, 100, 500, 100, 1000, 100, 500, 100, 1000, 100, 2000}, 0));
+            stop();
             locateView.callOnClick();
         }
         Log.d(TAG, toString());
